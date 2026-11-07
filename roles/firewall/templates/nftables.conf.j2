@@ -1,0 +1,34 @@
+#!/usr/sbin/nft -f
+# Managed by Ansible — host firewall (default-deny inbound)
+
+flush ruleset
+
+table inet filter {
+	chain input {
+		type filter hook input priority 0; policy drop;
+
+		# loopback and already-open connections
+		iif "lo" accept
+		ct state established,related accept
+		ct state invalid drop
+
+		# ping, and the ICMPv6 IPv6 needs to work
+		ip protocol icmp accept
+		ip6 nexthdr icmpv6 accept
+
+		# getting an address (DHCPv4 + DHCPv6 replies)
+		udp sport 67 udp dport 68 accept
+		udp sport 547 udp dport 546 accept
+
+		# SSH: IPv4 only, from the admin host only, on one interface
+		iifname "{{ firewall_ssh_iface }}" ip saddr {{ firewall_ssh_allowed_ipv4 }} tcp dport 22 ct state new accept
+	}
+
+	chain forward {
+		type filter hook forward priority 0; policy drop;
+	}
+
+	chain output {
+		type filter hook output priority 0; policy accept;
+	}
+}

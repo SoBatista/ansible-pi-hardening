@@ -1,0 +1,12 @@
+# GitHub-specific files (CI workflows etc.) — kept local only
+.github/
+
+# Vagrant state — contains the VM's private SSH key
+.vagrant/
+
+# Ansible local cache
+.ansible/
+*.retry
+
+# Your real per-host values (IPs, users, SSH keys) — never commit these
+inventories/*/host_vars/

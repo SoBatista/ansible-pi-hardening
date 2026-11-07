@@ -1,0 +1,15 @@
+---
+# SSH hardening — drop-in config, validated before it is applied.
+- name: Deploy the SSH hardening drop-in
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/99-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by Ansible — SSH hardening
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin no
+    validate: sshd -t -f %s
+  notify: Reload ssh

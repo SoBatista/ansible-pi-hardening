@@ -1,0 +1,10 @@
+---
+# updates role — exactly what EP-01 did: refresh the apt index, then full-upgrade. Nothing else.
+- name: Update the apt package index
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600   # skip refresh if cache is <1h old → keeps re-runs idempotent
+
+- name: Upgrade all installed packages (apt full-upgrade)
+  ansible.builtin.apt:
+    upgrade: full            # = apt full-upgrade: installs/removes as needed to upgrade

@@ -1,0 +1,4 @@
+---
+# Override per host in the inventory.
+firewall_ssh_iface: eth0          # interface SSH is allowed on (the Pi uses wlan0)
+firewall_ssh_allowed_ipv4: ""     # admin host allowed to reach SSH — set per host

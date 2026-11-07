@@ -1,0 +1,21 @@
+---
+# Turn off unused services.
+- name: Purge avahi-daemon
+  ansible.builtin.apt:
+    name: avahi-daemon
+    state: absent
+    purge: true
+
+- name: Gather the set of installed packages
+  ansible.builtin.package_facts:
+
+- name: Disable, stop and mask rpcbind (only where present)
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+    masked: true
+  loop:
+    - rpcbind.service
+    - rpcbind.socket
+  when: "'rpcbind' in ansible_facts.packages"

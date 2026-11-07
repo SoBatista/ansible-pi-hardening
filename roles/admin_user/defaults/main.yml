@@ -1,0 +1,4 @@
+---
+# Defaults for the admin_user role — override per host in the inventory.
+admin_user_name: piadmin
+admin_user_ssh_key: ""   # the laptop public key to authorize; set per host when we run it

@@ -1,0 +1,39 @@
+---
+# Refuse to run unless this is the expected OS and the firewall won't lock us out.
+- name: Require that every <INSERT ...> placeholder in the inventory has been replaced
+  ansible.builtin.assert:
+    that:
+      - "'<INSERT' not in (item | string)"
+    fail_msg: "Refusing to run — '{{ item }}' is still a placeholder. Set your real value in the inventory or host_vars (see README)."
+    quiet: true
+  loop:
+    - "{{ ansible_host }}"
+    - "{{ ansible_user }}"
+    - "{{ admin_user_name }}"
+    - "{{ admin_user_ssh_key }}"
+    - "{{ firewall_ssh_allowed_ipv4 }}"
+
+- name: Require Debian 13
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Debian"
+      - ansible_distribution_major_version == "13"
+    fail_msg: "Refusing to run — this host is {{ ansible_distribution }} {{ ansible_distribution_major_version }}, not Debian 13."
+    success_msg: "OK — Debian {{ ansible_distribution_major_version }}."
+
+- name: Find the address we are connected from
+  ansible.builtin.shell: echo "$SSH_CONNECTION"
+  register: preflight_ssh_conn
+  changed_when: false
+  become: false
+  check_mode: false
+
+- name: Require that the firewall will allow the address we are connected from
+  ansible.builtin.assert:
+    that:
+      - firewall_ssh_allowed_ipv4 | length > 0
+      - preflight_ssh_conn.stdout.startswith(firewall_ssh_allowed_ipv4 ~ ' ')
+    fail_msg: >-
+      Refusing to run — SSH_CONNECTION is '{{ preflight_ssh_conn.stdout }}',
+      not from the allowed source {{ firewall_ssh_allowed_ipv4 }}. Would lock you out.
+    success_msg: "OK — connected from {{ firewall_ssh_allowed_ipv4 }}, which the firewall allows."

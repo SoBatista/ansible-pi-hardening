@@ -1,0 +1,30 @@
+---
+# admin_user role — just make sure the admin user and their SSH key exist.
+# On the Pi the user already exists (Raspberry Pi Imager); on the VM this CREATES it.
+# We do NOT touch sudo policy: no sudoers edits, no NOPASSWD.
+- name: Ensure the admin user exists and is in the sudo group
+  ansible.builtin.user:
+    name: "{{ admin_user_name }}"
+    groups: sudo
+    append: true          # add sudo WITHOUT stripping other groups
+    shell: /bin/bash      # match the Pi-Imager user's shell
+    state: present
+
+- name: Ensure the admin user's .ssh directory exists
+  ansible.builtin.file:
+    path: "/home/{{ admin_user_name }}/.ssh"
+    state: directory
+    owner: "{{ admin_user_name }}"
+    group: "{{ admin_user_name }}"
+    mode: "0700"
+
+- name: Ensure the laptop's public key is authorized
+  ansible.builtin.lineinfile:
+    path: "/home/{{ admin_user_name }}/.ssh/authorized_keys"
+    line: "{{ admin_user_ssh_key }}"
+    create: true
+    owner: "{{ admin_user_name }}"
+    group: "{{ admin_user_name }}"
+    mode: "0600"
+    state: present
+  when: admin_user_ssh_key | length > 0

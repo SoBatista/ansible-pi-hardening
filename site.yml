@@ -1,0 +1,13 @@
+---
+- name: Harden the Pi
+  hosts: pi
+  become: true
+  roles:
+    - preflight
+    - updates
+    - admin_user
+    - ssh
+    - firewall
+    - services
+    - unattended_upgrades
+    - logging
